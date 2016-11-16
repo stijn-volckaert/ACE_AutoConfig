@@ -30,6 +30,7 @@ var config bool bAutoDetectHUDs;          // Auto detect all huds
 var config bool bAutoDetectHUDExtensions; // Auto detect Nexgen HUD Extensions (they usually render stuff!)
 var config bool bAutoDetectHUDMutators;   // Auto detect hud mutators
 var config bool bAutoDetectScoreboards;   // Auto detect score boards
+var config bool bAddSkinTextures;         // Automatically add skin texture files to detect skin hacks (this replaces AnthChecker)
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
 var config string UPackages[32];          // Extra packages to add if AutoConfig doesn't find them all
 
@@ -312,6 +313,25 @@ function CheckConfig(IACEActor A)
             AddPackage(A, "UnrealI.u");
         if (PackageHelper.GetItemName("ISINMAP FIRE") == "TRUE")
             AddPackage(A, "Fire.u");
+
+        // AnthChecker replacement
+        if (bAddSkinTextures)
+        {
+            if (PackageHelper.GetItemName("ISINMAP COMMANDOSKINS") == "TRUE")
+                AddPackage(A, "commandoskins.utx");
+            if (PackageHelper.GetItemName("ISINMAP FCOMMANDOSKINS") == "TRUE")
+                AddPackage(A, "FCommandoSkins.utx");
+            if (PackageHelper.GetItemName("ISINMAP FEMALE1SKINS") == "TRUE")
+                AddPackage(A, "Female1Skins.utx");
+            if (PackageHelper.GetItemName("ISINMAP FEMALE2SKINS") == "TRUE")
+                AddPackage(A, "Female2Skins.utx");
+            if (PackageHelper.GetItemName("ISINMAP SGIRLSKINS") == "TRUE")
+                AddPackage(A, "SGirlSkins.utx");
+            if (PackageHelper.GetItemName("ISINMAP SOLDIERSKINS") == "TRUE")
+                AddPackage(A, "Soldierskins.utx");
+            if (PackageHelper.GetItemName("ISINMAP BOSSSKINS") == "TRUE")
+                AddPackage(A, "BossSkins.utx");
+        }
     }
 
     // Finally process the UPackages that were manually added by the user
@@ -320,7 +340,10 @@ function CheckConfig(IACEActor A)
         Tmp = UPackages[i];
         if (InStr(Tmp, ".") != -1)
             Tmp = Left(Tmp, InStr(Tmp, "."));
-        if (UPackages[i] != "" && PackageHelper.GetItemName("ISINMAP "$Tmp) == "TRUE")
+
+        if (UPackages[i] != "" &&
+           PackageHelper != none &&
+           PackageHelper.GetItemName("ISINMAP "$Tmp) == "TRUE")
             AddPackage(A, UPackages[i]);
     }
 
@@ -370,7 +393,11 @@ function AddPackage(IACEActor A, string PackageName)
 {
     local int i;
 
-    if (!(Right(PackageName, 2) ~= ".u"))
+    if (!(Right(PackageName, 2) ~= ".u") &&
+        !(Right(PackageName, 4) ~= ".utx") &&
+        !(Right(PackageName, 4) ~= ".umx") &&
+        !(Right(PackageName, 4) ~= ".uax") &&
+        !(Right(PackageName, 4) ~= ".unr"))
         PackageName = PackageName $ ".u";
 
     for (i = 0; i < 32; ++i)
@@ -494,5 +521,6 @@ defaultproperties
     bAutoDetectHUDExtensions=true
     bAutoDetectHUDMutators=true
     bAutoDetectScoreboards=true
+    bAddSkinTextures=true
     bVerbose=false
 }

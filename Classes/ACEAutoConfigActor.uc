@@ -34,6 +34,8 @@ var config bool bAddSkinTextures;         // Automatically add skin texture file
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
 var config string UPackages[32];          // Extra packages to add if AutoConfig doesn't find them all
 
+const IACEUPackagesSize = 256;             // The size of the IACEActor.UPackages array.
+
 // =============================================================================
 // GetItemName ~ Look for the ACE Actor and init
 // =============================================================================
@@ -79,7 +81,7 @@ function bool ServerIsRunning(string PackageName)
     if (Right(PackageName, 2) ~= ".u")
         PackageName = Left(PackageName, Len(PackageName) - 2);
 
-    for (i = 0; i < 255; ++i)
+    for (i = 0; i < arrayCount(ServerPackages); ++i)
     {
         if (ServerPackages[i] ~= PackageName)
             return true;
@@ -118,7 +120,7 @@ function bool ShouldBeAdded(IACEActor A, string PackageName)
         return false;
 
     // Packages that are already in the list should not be added
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < IACEUPackagesSize; ++i)
     {
         if (A.UPackages[i] ~= PackageName)
             return false;
@@ -226,7 +228,7 @@ function CheckConfig(IACEActor A)
     if (bVerbose)
         ACELog("Cleaning up packageslist...");
 
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < IACEUPackagesSize; ++i)
         A.UPackages[i] = "";
 
     // Some maps have embedded code for extra effects and such
@@ -335,7 +337,7 @@ function CheckConfig(IACEActor A)
     }
 
     // Finally process the UPackages that were manually added by the user
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < arrayCount(UPackages); ++i)
     {
         Tmp = UPackages[i];
         if (InStr(Tmp, ".") != -1)
@@ -348,7 +350,7 @@ function CheckConfig(IACEActor A)
     }
 
     // Other settings!
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < IACEUPackagesSize; ++i)
     {
         if (A.bAllowCrosshairScaling)
         {
@@ -376,7 +378,7 @@ function RemovePackage(IACEActor A, int i)
     ACELog("AutoConfig Removed Package:"@A.UPackages[i]);
     A.UPackages[i] = "";
 
-    for (j = i; j < 31; ++j)
+    for (j = i; j < IACEUPackagesSize - 1; ++j)
     {
         if (A.UPackages[j+1] != "")
         {
@@ -400,13 +402,13 @@ function AddPackage(IACEActor A, string PackageName)
         !(Right(PackageName, 4) ~= ".unr"))
         PackageName = PackageName $ ".u";
 
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < IACEUPackagesSize; ++i)
     {
         if (A.UPackages[i] ~= PackageName)
             return;
     }
 
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < IACEUPackagesSize; ++i)
     {
         if (A.UPackages[i] == "")
         {
@@ -455,7 +457,7 @@ function GetPackageArrays()
     local int zzI;
 
     // Wipe the arrays
-    for (zzI = 0; zzI < 255; ++zzI)
+    for (zzI = 0; zzI < arrayCount(ServerActors); ++zzI)
     {
         ServerActors[zzI] = "";
         ServerPackages[zzI] = "";
@@ -478,7 +480,7 @@ function GetPackageArrays()
         if (Left(zzServerPackages,2) ~= "(\"")
             zzServerPackages = Mid(zzServerPackages,2);
 
-        for (zzI = 0; zzI < 256; ++zzI)
+        for (zzI = 0; zzI < arrayCount(ServerActors); ++zzI)
         {
             zzToken = xxGetToken(zzServerActors,"\",\"",zzI);
             if (zzToken != "")
@@ -487,7 +489,7 @@ function GetPackageArrays()
                 break;
         }
 
-        for (zzI = 0; zzI < 256; ++zzI)
+        for (zzI = 0; zzI < arrayCount(ServerPackages); ++zzI)
         {
             zzToken = xxGetToken(zzServerPackages,"\",\"",zzI);
             if (zzToken != "")

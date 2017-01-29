@@ -32,9 +32,7 @@ var config bool bAutoDetectHUDMutators;   // Auto detect hud mutators
 var config bool bAutoDetectScoreboards;   // Auto detect score boards
 var config bool bAddSkinTextures;         // Automatically add skin texture files to detect skin hacks (this replaces AnthChecker)
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
-var config string UPackages[32];          // Extra packages to add if AutoConfig doesn't find them all
-
-const IACEUPackagesSize = 256;             // The size of the IACEActor.UPackages array.
+var config string UPackages[255];         // Extra packages to add if AutoConfig doesn't find them all
 
 // =============================================================================
 // GetItemName ~ Look for the ACE Actor and init
@@ -81,7 +79,7 @@ function bool ServerIsRunning(string PackageName)
     if (Right(PackageName, 2) ~= ".u")
         PackageName = Left(PackageName, Len(PackageName) - 2);
 
-    for (i = 0; i < arrayCount(ServerPackages); ++i)
+    for (i = 0; i < 255; ++i)
     {
         if (ServerPackages[i] ~= PackageName)
             return true;
@@ -105,7 +103,11 @@ function bool ShouldBeAdded(IACEActor A, string PackageName)
     local int i;
     local string tmp;
 
-    if (!(Right(PackageName, 2) ~= ".u"))
+    if (!(Right(PackageName, 2) ~= ".u") &&
+        !(Right(PackageName, 4) ~= ".uax") &&
+        !(Right(PackageName, 4) ~= ".umx") &&
+        !(Right(PackageName, 4) ~= ".utx") &&
+        !(Right(PackageName, 4) ~= ".unr"))
         PackageName = PackageName $ ".u";
 
     // ACE and standard packages should never be added
@@ -120,7 +122,7 @@ function bool ShouldBeAdded(IACEActor A, string PackageName)
         return false;
 
     // Packages that are already in the list should not be added
-    for (i = 0; i < IACEUPackagesSize; ++i)
+    for (i = 0; i < 255; ++i)
     {
         if (A.UPackages[i] ~= PackageName)
             return false;
@@ -223,12 +225,12 @@ function AddPackagesByClass(IACEActor A, string ClassType, string FriendlyName)
 function CheckConfig(IACEActor A)
 {
     local int i,j;
-    local string Tmp,Tmp2;
+    local string Tmp,Tmp2,Pkgs;
 
     if (bVerbose)
         ACELog("Cleaning up packageslist...");
 
-    for (i = 0; i < IACEUPackagesSize; ++i)
+    for (i = 0; i < 255; ++i)
         A.UPackages[i] = "";
 
     // Some maps have embedded code for extra effects and such
@@ -277,26 +279,20 @@ function CheckConfig(IACEActor A)
         // Check for running hudmutators
         if (bVerbose)
             ACELog("Checking HUDMutators...");
-        Tmp = Level.ConsoleCommand("obj refs class=function name=engine.mutator.postrender");
-        i   = InStr(Tmp, "Shortest reachability");
-        if (i != -1)
-            Tmp = Left(Tmp, i);
-        i = 0;
-        while (i != -1)
+
+        if (PackageHelper != none)
         {
-            i = InStr(Tmp, "Function ");
-            if (i != -1)
+            Pkgs = PackageHelper.GetItemName("FINDIMPORTS ENGINE.MUTATOR.POSTRENDER");
+
+            while (InStr(Pkgs, ";") != -1)
             {
-                Tmp = Mid(Tmp, i + 9);
-                j   = InStr(Tmp, ".");
-                if (j != -1)
+                Tmp2 = Left(Pkgs, InStr(Pkgs, ";"));
+                Pkgs = Mid(Pkgs, InStr(Pkgs, ";") + 1);
+
+                if (ShouldBeAdded(A, Tmp2))
                 {
-                    Tmp2 = Left(Tmp, j);
-                    if (ShouldBeAdded(A, Tmp2))
-                    {
-                        ACELog("Found a new package containing a HUDMutator: " $ Tmp2);
-                        AddPackage(A, Tmp2 $ ".u");
-                    }
+                    ACELog("Found a new package containing a HUDMutator: " $ Tmp2);
+                    AddPackage(A, Tmp2);
                 }
             }
         }
@@ -337,7 +333,7 @@ function CheckConfig(IACEActor A)
     }
 
     // Finally process the UPackages that were manually added by the user
-    for (i = 0; i < arrayCount(UPackages); ++i)
+    for (i = 0; i < 255; ++i)
     {
         Tmp = UPackages[i];
         if (InStr(Tmp, ".") != -1)
@@ -350,7 +346,7 @@ function CheckConfig(IACEActor A)
     }
 
     // Other settings!
-    for (i = 0; i < IACEUPackagesSize; ++i)
+    for (i = 0; i < 255; ++i)
     {
         if (A.bAllowCrosshairScaling)
         {
@@ -378,7 +374,7 @@ function RemovePackage(IACEActor A, int i)
     ACELog("AutoConfig Removed Package:"@A.UPackages[i]);
     A.UPackages[i] = "";
 
-    for (j = i; j < IACEUPackagesSize - 1; ++j)
+    for (j = i; j < 254; ++j)
     {
         if (A.UPackages[j+1] != "")
         {
@@ -402,13 +398,13 @@ function AddPackage(IACEActor A, string PackageName)
         !(Right(PackageName, 4) ~= ".unr"))
         PackageName = PackageName $ ".u";
 
-    for (i = 0; i < IACEUPackagesSize; ++i)
+    for (i = 0; i < 255; ++i)
     {
         if (A.UPackages[i] ~= PackageName)
             return;
     }
 
-    for (i = 0; i < IACEUPackagesSize; ++i)
+    for (i = 0; i < 255; ++i)
     {
         if (A.UPackages[i] == "")
         {
@@ -457,7 +453,7 @@ function GetPackageArrays()
     local int zzI;
 
     // Wipe the arrays
-    for (zzI = 0; zzI < arrayCount(ServerActors); ++zzI)
+    for (zzI = 0; zzI < 255; ++zzI)
     {
         ServerActors[zzI] = "";
         ServerPackages[zzI] = "";
@@ -480,7 +476,7 @@ function GetPackageArrays()
         if (Left(zzServerPackages,2) ~= "(\"")
             zzServerPackages = Mid(zzServerPackages,2);
 
-        for (zzI = 0; zzI < arrayCount(ServerActors); ++zzI)
+        for (zzI = 0; zzI < 255; ++zzI)
         {
             zzToken = xxGetToken(zzServerActors,"\",\"",zzI);
             if (zzToken != "")
@@ -489,7 +485,7 @@ function GetPackageArrays()
                 break;
         }
 
-        for (zzI = 0; zzI < arrayCount(ServerPackages); ++zzI)
+        for (zzI = 0; zzI < 255; ++zzI)
         {
             zzToken = xxGetToken(zzServerPackages,"\",\"",zzI);
             if (zzToken != "")

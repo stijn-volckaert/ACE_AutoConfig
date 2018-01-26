@@ -103,22 +103,18 @@ function bool ShouldBeAdded(IACEActor A, string PackageName)
     local int i;
     local string tmp;
 
-    if (!(Right(PackageName, 2) ~= ".u") &&
-        !(Right(PackageName, 4) ~= ".uax") &&
-        !(Right(PackageName, 4) ~= ".umx") &&
-        !(Right(PackageName, 4) ~= ".utx") &&
-        !(Right(PackageName, 4) ~= ".unr"))
-        PackageName = PackageName $ ".u";
+    if (InStr(PackageName, ".") != -1)
+        PackageName = Left(PackageName, InStr(PackageName, "."));
 
     // ACE and standard packages should never be added
-    if (PackageName ~= "Core.u"
-        || PackageName ~= "UMenu.u"
-        || PackageName ~= "UTMenu.u"
-        || PackageName ~= "UWindow.u"
-        || PackageName ~= "UWeb.u"
-        || PackageName ~= "BotPack.u"
-        || PackageName ~= "Engine.u"
-        || (Left(PackageName, 4) ~= "ACEv" && Right(PackageName, 4) ~= "_C.u"))
+    if (PackageName ~= "Core"
+        || PackageName ~= "UMenu"
+        || PackageName ~= "UTMenu"
+        || PackageName ~= "UWindow"
+        || PackageName ~= "UWeb"
+        || PackageName ~= "BotPack"
+        || PackageName ~= "Engine"
+        || (Left(PackageName, 4) ~= "ACEv" && Right(PackageName, 2) ~= "_C"))
         return false;
 
     // Packages that are already in the list should not be added
@@ -213,7 +209,7 @@ function AddPackagesByClass(IACEActor A, string ClassType, string FriendlyName)
             if (ShouldBeAdded(A, Tmp))
             {
                 ACELog("Found a new package containing a " $ FriendlyName $ ": " $ Tmp);
-                AddPackage(A, Tmp $ ".u");
+                AddPackage(A, Tmp);
             }
         }
     }
@@ -240,8 +236,8 @@ function CheckConfig(IACEActor A)
     if (PackageHelper != none && PackageHelper.GetItemName("HASEMBEDDEDCODE " $ Tmp) == "TRUE")
     {
         ACELog("Mapfile has embedded code");
-        ACELog("AutoConfig Added Package:"@Tmp$".unr");
-        A.UPackages[0] = Tmp $ ".unr";
+        ACELog("AutoConfig Added Package:"@Tmp);
+        A.UPackages[0] = Tmp;
     }
 
     if (bVerbose)
@@ -249,7 +245,7 @@ function CheckConfig(IACEActor A)
 
     // Check if gametype is there
     if (Left(Caps(string(Level.Game.Class)), 7) != "BOTPACK")
-        AddPackage(A, Left(string(Level.Game.class), InStr(string(Level.Game.class), ".")) $ ".u");
+        AddPackage(A, Left(string(Level.Game.class), InStr(string(Level.Game.class), ".")));
 
     // Cache classes list
     if (bAutoDetectWeapons || bAutoDetectHUDs || bAutoDetectHUDMutators || bAutoDetectScoreboards)
@@ -391,12 +387,8 @@ function AddPackage(IACEActor A, string PackageName)
 {
     local int i;
 
-    if (!(Right(PackageName, 2) ~= ".u") &&
-        !(Right(PackageName, 4) ~= ".utx") &&
-        !(Right(PackageName, 4) ~= ".umx") &&
-        !(Right(PackageName, 4) ~= ".uax") &&
-        !(Right(PackageName, 4) ~= ".unr"))
-        PackageName = PackageName $ ".u";
+    if (InStr(PackageName, ".") != -1)
+        PackageName = Left(PackageName, InStr(PackageName, "."));
 
     for (i = 0; i < 255; ++i)
     {

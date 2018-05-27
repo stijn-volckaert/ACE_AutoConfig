@@ -30,6 +30,7 @@ var config bool bAutoDetectHUDs;          // Auto detect all huds
 var config bool bAutoDetectHUDExtensions; // Auto detect Nexgen HUD Extensions (they usually render stuff!)
 var config bool bAutoDetectHUDMutators;   // Auto detect hud mutators
 var config bool bAutoDetectScoreboards;   // Auto detect score boards
+var config bool bAutoDetectPlayerTypes;   // Auto detect player types
 var config bool bAddSkinTextures;         // Automatically add skin texture files to detect skin hacks (this replaces AnthChecker)
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
 var config string UPackages[255];         // Extra packages to add if AutoConfig doesn't find them all
@@ -266,6 +267,10 @@ function CheckConfig(IACEActor A)
     // NexgenHUDExtension but not of ChallengeHUD.
     if (bAutoDetectHUDExtensions)
         AddPackagesByClass(A, "NexgenHUDExtension", "Nexgen HUD Extension");
+
+    // Add playerpawn classes
+    if (bAutoDetectPlayerTypes)
+        AddPackagesByClass(A, "PlayerPawn", "Player Type");
 
     // These are tricky to detect since there is no HUDMutator class.
     // All HUDMutators are just mutators but not all mutators are hudmutators.
@@ -511,6 +516,7 @@ defaultproperties
     bAutoDetectHUDExtensions=true
     bAutoDetectHUDMutators=true
     bAutoDetectScoreboards=true
+    bAutoDetectPlayerTypes=true
     bAddSkinTextures=true
     bVerbose=false
 }

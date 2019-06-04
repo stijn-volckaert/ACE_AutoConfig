@@ -221,14 +221,36 @@ function AddPackagesByClass(IACEActor A, string ClassType, string FriendlyName)
 // =============================================================================
 function CheckConfig(IACEActor A)
 {
-    local int i,j;
+    local int i,j,TmpPackagesCnt;
     local string Tmp,Tmp2,Pkgs;
+	local string TmpPackages[255];
 
     if (bVerbose)
         ACELog("Cleaning up packageslist...");
 
     for (i = 0; i < 255; ++i)
+	{
+		// If a package that was previously added is still in the UEngine PackageMap, 
+		// then keep it in our UPackages list across map switches
+		Tmp = A.UPackages[i];
+		if (InStr(Tmp, ".") != -1)
+			Tmp = Left(Tmp, InStr(Tmp, "."));		
+		
+		Tmp2 = PackageHelper.GetItemName("ISINMAP " $ Tmp);
+		if (Tmp2 == "TRUE")
+		{
+			TmpPackages[TmpPackagesCnt++] = Tmp;
+		}		
+		
         A.UPackages[i] = "";
+	}
+	
+	for (i = 0; i < TmpPackagesCnt; ++i)
+	{
+		if (bVerbose)
+			ACELog("Keeping UPackage from previous map: " $ TmpPackages[i]);
+		AddPackage(A, TmpPackages[i]);
+	}
 
     // Some maps have embedded code for extra effects and such
     Tmp = string(Level);
@@ -238,7 +260,7 @@ function CheckConfig(IACEActor A)
     {
         ACELog("Mapfile has embedded code");
         ACELog("AutoConfig Added Package:"@Tmp);
-        A.UPackages[0] = Tmp;
+        AddPackage(A, Tmp);
     }
 
     if (bVerbose)

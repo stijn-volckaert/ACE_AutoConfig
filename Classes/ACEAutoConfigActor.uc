@@ -34,6 +34,7 @@ var config bool bAutoDetectPlayerTypes;   // Auto detect player types
 var config bool bAddSkinTextures;         // Automatically add skin texture files to detect skin hacks (this replaces AnthChecker)
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
 var config string UPackages[255];         // Extra packages to add if AutoConfig doesn't find them all
+var config string PackageHelperClass;
 
 // =============================================================================
 // GetItemName ~ Look for the ACE Actor and init
@@ -441,12 +442,12 @@ function AddPackage(IACEActor A, string PackageName)
 // =============================================================================
 function InitPackageHelper()
 {
-    local class<Actor> PackageHelperClass;
+    local class<Actor> PackageHelperCls;
 
-    PackageHelperClass = class<Actor>(DynamicLoadObject("PackageHelper_v13.PHActor",class'class',true));
-    if (PackageHelperClass != none)
+    PackageHelperCls = class<Actor>(DynamicLoadObject(PackageHelperClass,class'class',true));
+    if (PackageHelperCls != none)
     {
-        PackageHelper = Level.Spawn(PackageHelperClass);
+        PackageHelper = Level.Spawn(PackageHelperCls);
         if (PackageHelper != none)
         {
             PackageHelper.Touch(self);
@@ -541,4 +542,5 @@ defaultproperties
     bAutoDetectPlayerTypes=true
     bAddSkinTextures=true
     bVerbose=false
+	PackageHelperClass="PackageHelper_v14.PHActor"
 }

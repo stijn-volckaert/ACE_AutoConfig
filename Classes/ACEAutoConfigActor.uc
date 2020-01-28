@@ -31,6 +31,7 @@ var config bool bAutoDetectHUDExtensions; // Auto detect Nexgen HUD Extensions (
 var config bool bAutoDetectHUDMutators;   // Auto detect hud mutators
 var config bool bAutoDetectScoreboards;   // Auto detect score boards
 var config bool bAutoDetectPlayerTypes;   // Auto detect player types
+var config bool bAutoDetectDangerousMods; // Auto detect mods that can call dangerous native functions
 var config bool bAddSkinTextures;         // Automatically add skin texture files to detect skin hacks (this replaces AnthChecker)
 var config bool bVerbose;                 // Log extra info into serverlog (useful for debugging)
 var config string UPackages[255];         // Extra packages to add if AutoConfig doesn't find them all
@@ -369,6 +370,51 @@ function CheckConfig(IACEActor A)
             AddPackage(A, UPackages[i]);
     }
 
+	// This is super slow so we want to do this last
+	if (bAutoDetectDangerousMods && PackageHelper != none)
+	{
+		// build the exclusion list
+		Tmp = "";
+
+		for (i = 0; i < 255; ++i)
+			if (UPackages[i] != "")
+			   Tmp = Tmp $ UPackages[i] $ ";";
+
+		// now scan all remaining packages to see if any of them could
+		// potentially call one of the native functions ACE considers
+		// dangerous (because a lot of cheats use them)
+
+		// Current list of dangerous natives:
+		// 277: AActor::execTrace
+		// 299: AActor::execSetRotation
+		// 309: AActor::execTraceActors
+		// 311: AActor::execVisibleActors
+		// 312: AActor::execVisibleCollidingActors
+		// 465: UCanvas::execDrawText
+		// 466: UCanvas::execDrawTile
+		// 467: UCanvas::execDrawActor
+		// 468: UCanvas::execDrawTileClipped
+		// 469: UCanvas::execDrawTextClipped
+		// 471: UCanvas::execDrawClippedActor
+		// 472: UScriptedTexture::execDrawText
+		// 473: UScriptedTexture::execDrawTile
+		// 474: UScriptedTexture::execDrawColoredText
+		// 548: AActor::execFastTrace
+
+		Pkgs = PackageHelper.GetItemName("FINDNATIVECALLS 277;299;309;311;312;465;466;467;468;469;471;472;473;474;548; " $ Tmp);
+        while (InStr(Pkgs, ";") != -1)
+        {
+            Tmp2 = Left(Pkgs, InStr(Pkgs, ";"));
+            Pkgs = Mid(Pkgs, InStr(Pkgs, ";") + 1);
+
+            if (ShouldBeAdded(A, Tmp2))
+            {
+                ACELog("Found a new package containing a HUDMutator: " $ Tmp2);
+                AddPackage(A, Tmp2);
+            }
+        }
+	}
+
     // Other settings!
     for (i = 0; i < 255; ++i)
     {
@@ -540,7 +586,8 @@ defaultproperties
     bAutoDetectHUDMutators=true
     bAutoDetectScoreboards=true
     bAutoDetectPlayerTypes=true
-    bAddSkinTextures=true
+	bAutoDetectDangerousMods=true
+    bAddSkinTextures=true	
     bVerbose=false
-	PackageHelperClass="PackageHelper_v14.PHActor"
+	PackageHelperClass="PackageHelper_v15.PHActor"
 }

@@ -409,7 +409,7 @@ function CheckConfig(IACEActor A)
 
             if (ShouldBeAdded(A, Tmp2))
             {
-                ACELog("Found a new package containing a HUDMutator: " $ Tmp2);
+                ACELog("Found a new package containing a dangerous function call: " $ Tmp2);
                 AddPackage(A, Tmp2);
             }
         }

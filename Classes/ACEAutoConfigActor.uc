@@ -374,7 +374,7 @@ function CheckConfig(IACEActor A)
 	if (bAutoDetectDangerousMods && PackageHelper != none)
 	{
 		// build the exclusion list
-		Tmp = "";
+		Tmp = "Core;Engine;UMenu;UTMenu;UWindow;Botpack;UWeb;";
 
 		for (i = 0; i < 255; ++i)
 			if (UPackages[i] != "")

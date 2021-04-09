@@ -117,6 +117,9 @@ function bool ShouldBeAdded(IACEActor A, string PackageName)
         || PackageName ~= "UWeb"
         || PackageName ~= "BotPack"
         || PackageName ~= "Engine"
+		|| PackageName ~= "UnrealShare"
+		|| PackageName ~= "UnrealI"
+		|| PackageName ~= "Fire"
         || (Left(PackageName, 4) ~= "ACEv" && Right(PackageName, 2) ~= "_C"))
         return false;
 
@@ -330,13 +333,6 @@ function CheckConfig(IACEActor A)
     // Add known packages if they are in the PackageMap
     if (PackageHelper != none)
     {
-        if (PackageHelper.GetItemName("ISINMAP UNREALSHARE") == "TRUE")
-            AddPackage(A, "Unrealshare.u");
-        if (PackageHelper.GetItemName("ISINMAP UNREALI") == "TRUE")
-            AddPackage(A, "UnrealI.u");
-        if (PackageHelper.GetItemName("ISINMAP FIRE") == "TRUE")
-            AddPackage(A, "Fire.u");
-
         // AnthChecker replacement
         if (bAddSkinTextures)
         {
@@ -374,7 +370,7 @@ function CheckConfig(IACEActor A)
 	if (bAutoDetectDangerousMods && PackageHelper != none)
 	{
 		// build the exclusion list
-		Tmp = "Core;Engine;UMenu;UTMenu;UWindow;Botpack;UWeb;";
+		Tmp = "Core;Engine;UMenu;UTMenu;UWindow;Botpack;UWeb;UnrealI;UnrealShare;Fire;";
 
 		for (i = 0; i < 255; ++i)
 			if (UPackages[i] != "")

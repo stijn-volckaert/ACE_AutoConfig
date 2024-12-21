@@ -198,7 +198,7 @@ function AddPackagesByClass(IACEActor A, string ClassType, string FriendlyName)
     k = xxGetTokenCount(SubClasses, ",")-1;
     for (j = 0; j < k; j++)
     {
-        index = InStr(ClassesList, "." $ xxGetToken(SubClasses, ",", j));
+        index = InStr(ClassesList, "." $ xxGetToken(SubClasses, ",", j) $ " ");
         if (index != -1)
         {
             Tmp   = Left(ClassesList, index);
@@ -240,12 +240,15 @@ function CheckConfig(IACEActor A)
 		Tmp = A.UPackages[i];
 		if (InStr(Tmp, ".") != -1)
 			Tmp = Left(Tmp, InStr(Tmp, "."));		
-		
-		Tmp2 = PackageHelper.GetItemName("ISINMAP " $ Tmp);
-		if (Tmp2 == "TRUE")
+
+		if (Len(Tmp) > 0)
 		{
-			TmpPackages[TmpPackagesCnt++] = Tmp;
-		}		
+			Tmp2 = PackageHelper.GetItemName("ISINMAP " $ Tmp);
+			if (Tmp2 == "TRUE")
+			{
+				TmpPackages[TmpPackagesCnt++] = Tmp;
+			}
+		}
 		
         A.UPackages[i] = "";
 	}
@@ -280,6 +283,12 @@ function CheckConfig(IACEActor A)
     {
         ClassesList = Level.ConsoleCommand("obj list class=class");
         ClassTree   = Level.ConsoleCommand("obj classes")$" ";
+
+		if (bVerbose)
+		{
+			ACELog("ClassesList: " $ ClassesList);
+			ACELog("ClassTree: " $ ClassTree);
+		}
     }
 
     // weapons
